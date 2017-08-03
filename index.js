@@ -4,6 +4,8 @@ var NORTH_FILENAME = './N_seaice_extent_daily_v2.1.csv',
 var w = 800,
     h = 800;
 
+var transition_duration = [500, 2000]
+
 var ice_data = {};
 var maxes = {};
 var scales = {};
@@ -108,6 +110,9 @@ async function buildChart() {
     });
     scales.color = d3.scaleSequential(d3.interpolateViridis)
       .domain(years)
+    scales.transition_duration = d3.scaleLinear()
+      .domain(years)
+      .range(transition_duration)
     var g = svg.append('g')
       .attr('transform', 'translate(' + h/2 + ',' + w/2 + ')')
 
@@ -126,16 +131,16 @@ async function buildChart() {
           .attr('id', y)
           .attr('d', line(year));
         
-        // var totalLength = path.node().getTotalLength();
-        // path
-        //   .attr("stroke-dasharray", totalLength + " " + totalLength)
-        //   .attr("stroke-dashoffset", totalLength)
-        // path
-        //   .transition()
-        //     .duration(100)
-        //     .ease('linear')
-        //     .attr('stroke-dashoffset', 0);
-        await sleep(500);
+        var totalLength = path.node().getTotalLength();
+        path
+          .attr("stroke-dasharray", totalLength + " " + totalLength)
+          .attr("stroke-dashoffset", totalLength)
+        path
+          .transition()
+            .duration(scales.transition_duration(y))
+            .ease(d3.easeLinear)
+            .attr('stroke-dashoffset', 0);
+        await sleep(scales.transition_duration(y));
 
     };
 
