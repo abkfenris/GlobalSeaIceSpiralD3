@@ -98,6 +98,8 @@ async function buildChart() {
       .radius(function(d) {
           return scales.summary(d.Extent);
       });
+    scales.color = d3.scaleSequential(d3.interpolateViridis)
+      .domain([0, ice_data.summary.length])
     
     // var pathData = line(ice_data.summary);
     //console.log(pathData);
@@ -105,9 +107,32 @@ async function buildChart() {
       .attr('transform', 'translate(' + h/2 + ',' + w/2 + ')')
     var path = g.append('path')
     //  .attr('d', pathData)
+
+    var defs = svg.append('defs');
+    var linearGradient = svg.append('linearGradient')
+    linearGradient
+      .attr('id', 'linear')
+      .attr('x1', '0%')
+      .attr('y1', '0%')
+      .attr('x2', '100%')
+      .attr('y2', '100%')
+    var stop0 = linearGradient.append('stop')
+    stop0
+      .attr('offset', '0%')
+      .attr('stop-color', scales.color(0))
+    var stop1 = linearGradient.append('stop')
+    stop1
+      .attr('offset', '0%')
+      .attr('stop-color', scales.color(0))
+    
+    
+    path.attr('stroke', 'url(#linear)')
+
     console.log('about to draw')
     for (var i = 1; i < ice_data.summary.length; i++) {
+    //for (var i = 1; i < 100; i++) {
         pathData = line(ice_data.summary.slice(0, i))
+        stop1.attr('stop-color', scales.color(i))
         path.attr('d', pathData);
         await sleep(10);
     }
