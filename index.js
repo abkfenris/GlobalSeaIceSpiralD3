@@ -12,7 +12,12 @@ var svg = d3.select('body')
   .append('svg')
   .attr('width', w)
   .attr('height', h)
+  .style('float', 'left')
   .style('border', '1px solid #d2d2d2');
+
+var ul = d3.select('body')
+  .append('ul')
+  .style('float', 'right')
 
 var line = d3.radialLine();
 
@@ -23,8 +28,8 @@ function cleanRow(d) {
                 Month: +d[' Month'],
                 Day: +d[' Day'],
                 Extent: +d['     Extent'],
-                date: new Date(+d.Year, +d[' Month'], +d[' Day']),
-                similar_date: new Date(2000, +d[' Month'], +d[' Day'])
+                date: new Date(+d.Year, +d[' Month'] - 1, +d[' Day']),
+                similar_date: new Date(2000, +d[' Month'] - 1, +d[' Day'])
             }
 }
 
@@ -98,44 +103,54 @@ async function buildChart() {
       .radius(function(d) {
           return scales.summary(d.Extent);
       });
+    var years = d3.extent(ice_data.summary, function(d) {
+        return d.Year;
+    });
     scales.color = d3.scaleSequential(d3.interpolateViridis)
-      .domain([0, ice_data.summary.length])
-    
-    // var pathData = line(ice_data.summary);
-    //console.log(pathData);
+      .domain(years)
     var g = svg.append('g')
       .attr('transform', 'translate(' + h/2 + ',' + w/2 + ')')
-    var path = g.append('path')
-    //  .attr('d', pathData)
-
-    var defs = svg.append('defs');
-    var linearGradient = svg.append('linearGradient')
-    linearGradient
-      .attr('id', 'linear')
-      .attr('x1', '0%')
-      .attr('y1', '0%')
-      .attr('x2', '100%')
-      .attr('y2', '100%')
-    var stop0 = linearGradient.append('stop')
-    stop0
-      .attr('offset', '0%')
-      .attr('stop-color', scales.color(0))
-    var stop1 = linearGradient.append('stop')
-    stop1
-      .attr('offset', '0%')
-      .attr('stop-color', scales.color(0))
-    
-    
-    path.attr('stroke', 'url(#linear)')
 
     console.log('about to draw')
-    for (var i = 1; i < ice_data.summary.length; i++) {
-    //for (var i = 1; i < 100; i++) {
-        pathData = line(ice_data.summary.slice(0, i))
-        stop1.attr('stop-color', scales.color(i))
-        path.attr('d', pathData);
-        await sleep(10);
-    }
+
+    for (var y = years[0]; y <= years[1]; y++) {
+        var year = ice_data.summary.filter(function(d) {
+            return d.Year === y;
+        });
+        var color = scales.color(y);
+        var li = ul.append('li')
+          .text(y)
+          .style('color', color);
+        var path = g.append('path')
+          .attr('stroke', color)
+          .attr('id', y)
+          .attr('d', line(year));
+        
+        // var totalLength = path.node().getTotalLength();
+        // path
+        //   .attr("stroke-dasharray", totalLength + " " + totalLength)
+        //   .attr("stroke-dashoffset", totalLength)
+        // path
+        //   .transition()
+        //     .duration(100)
+        //     .ease('linear')
+        //     .attr('stroke-dashoffset', 0);
+        await sleep(500);
+
+    };
+
+
+    // var path = g.append('path')
+    // path
+    //   .attr('stroke', 'black')
+
+    // for (var i = 1; i < ice_data.summary.length; i++) {
+    // //for (var i = 1; i < 100; i++) {
+    //     pathData = line(ice_data.summary.slice(0, i))
+    //     //stop1.attr('stop-color', scales.color(i))
+    //     path.attr('d', pathData);
+    //     await sleep(10);
+    // }
     console.log('drawn')
 
 }
