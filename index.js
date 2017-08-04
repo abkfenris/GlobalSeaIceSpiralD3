@@ -1,5 +1,7 @@
-var NORTH_FILENAME = './N_seaice_extent_daily_v2.1.csv',
-    SOUTH_FILENAME = './S_seaice_extent_daily_v2.1.csv';
+// var NORTH_FILENAME = './N_seaice_extent_daily_v2.1.csv',
+//     SOUTH_FILENAME = './S_seaice_extent_daily_v2.1.csv';
+var NORTH_FILENAME = './N.csv',
+    SOUTH_FILENAME = './S.csv';
 
 var w = 800,
     h = 800;
@@ -43,7 +45,6 @@ line
   .angle(function(d) {
       return date_scale(d.similar_date);
   })
-  //.interpolate('linear');
 
 function loadData() {
     d3.csv(NORTH_FILENAME)
@@ -122,6 +123,16 @@ async function buildChart() {
         var year = ice_data.summary.filter(function(d) {
             return d.Year === y;
         });
+        var stats = ice_data.summary.filter(function(d) {
+            return d.Year <= y;
+        });
+        var mean = d3.mean(year, function(d) {
+            return d.Extent;
+        });
+        var variance = d3.variance(year, function(d) {
+            return d.Extent;
+        })
+        console.log(mean, variance);
         var color = scales.color(y);
         var li = ul.append('li')
           .text(y)
